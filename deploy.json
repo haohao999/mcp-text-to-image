@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "TextToImage": {
+      "name": "本地文生图代理（支持中文）",
+      "type": "sse",
+      "command": "node",
+      "args": ["mcp-text-to-image.js"],
+      "isActive": true,
+      "description": "支持中文 Prompt 的本地文生图 MCP 服务，调用阿里云通义万相。"
+    }
+  }
+}
