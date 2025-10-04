@@ -1,17 +1,20 @@
 {
   "name": "mcp-text-to-image",
   "version": "1.0.0",
-  "description": "A MCP server for Chinese text-to-image using Tongyi Wanxiang, runnable via npx + GitHub",
+  "description": "A MCP server for Chinese text-to-image using Tongyi Wanxiang",
   "main": "src/index.js",
   "type": "module",
-  "bin": "src/index.js",
+  "bin": {
+    "mcp-text-to-image": "src/index.js"
+  },
   "scripts": {
     "start": "node src/index.js"
   },
-  "keywords": ["mcp", "text-to-image", "tongyi", "dashscope", "npx", "github"],
-  "author": "Your Name",
+  "keywords": ["mcp", "text-to-image", "tongyi", "dashscope"],
+  "author": "haohaok",
   "license": "MIT",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.1.0",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5"
   }
