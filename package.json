@@ -1,16 +1,21 @@
 {
   "name": "mcp-text-to-image",
   "version": "1.0.0",
-  "description": "MCP server for Chinese text-to-image using DashScope (stdio-sse)",
-  "main": "src/index.js",
-  "type": "module",
-  "bin": {
-    "mcp-text-to-image": "src/index.js"
-  },
+  "description": "A Model Context Protocol compatible service for generating images from text using Alibaba Cloud's DashScope API.",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^1.7.2"
-  }
+    "axios": "^1.4.0", 
+    "@modelcontextprotocol/sdk": "^x.y.z" // 确保替换为实际的版本号
+  },
+  "keywords": [
+    "MCP",
+    "text-to-image",
+    "AlibabaCloud",
+    "DashScope"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
 }
