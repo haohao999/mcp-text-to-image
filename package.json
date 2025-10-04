@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "axios": "^1.4.0", 
-    "@modelcontextprotocol/sdk": "^x.y.z" // 确保替换为实际的版本号
+    "@modelcontextprotocol/sdk": "^x.y.z"
   },
   "keywords": [
     "MCP",
