@@ -1,78 +1,65 @@
-import http from 'http';
-import url from 'url';
-import qs from 'querystring';
-import axios from 'axios';
+#!/usr/bin/env node
+import axios from "axios";
 
+// 从环境变量读取 API Key
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
 if (!DASHSCOPE_API_KEY) {
-  console.error("❌ 没有检测到 DASHSCOPE_API_KEY，请在 mcp-gateway 配置里设置 env");
+  console.error("❌ 错误: 没有检测到 DASHSCOPE_API_KEY，请在 mcp-gateway 配置里设置 env");
   process.exit(1);
 }
 
-const PORT = process.env.PORT || 30681;
+// 处理输入（mcp-gateway 会把请求通过 stdin 发过来）
+process.stdin.setEncoding("utf-8");
 
-const server = http.createServer((req, res) => {
-  const { pathname, query } = url.parse(req.url);
-  if (pathname === '/sse') {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
-    });
+console.log("✅ MCP TextToImage 服务已启动 (stdio-sse 模式)");
+console.log("📌 等待 mcp-gateway 输入 prompt...");
 
-    const params = qs.parse(query);
-    let prompt = params.prompt || '一只猫';
+process.stdin.on("data", async (chunk) => {
+  let input;
+  try {
+    input = JSON.parse(chunk.trim());
+  } catch (err) {
+    console.error("❌ 无法解析输入:", chunk);
+    return;
+  }
 
-    try {
-      prompt = decodeURIComponent(prompt);
-    } catch (e) {
-      console.warn('⚠️ Prompt decode 失败, 使用原始值:', prompt);
-    }
+  const prompt = input.prompt || "一只猫";
+  console.log(`[SSE] 收到中文 Prompt: ${prompt}`);
 
-    console.log(`[SSE] 收到 Prompt: ${prompt}`);
-    res.write(`data: ${JSON.stringify({ status: 'generating', prompt })}\n\n`);
+  // 先返回“开始生成”的事件
+  process.stdout.write(
+    `data: ${JSON.stringify({ status: "generating", prompt })}\n\n`
+  );
 
-    // 心跳保持 SSE
-    const heartbeat = setInterval(() => {
-      res.write(`: heartbeat\n\n`);
-    }, 15000);
-
-    axios.post(
-      'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-to-image/generation',
+  try {
+    const response = await axios.post(
+      "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-to-image/generation",
       {
-        model: 'wanx-v1',
+        model: "wanx-v1",
         input: { prompt },
-        parameters: { n: 1, size: '1024*1024' }
+        parameters: { n: 1, size: "1024*1024" },
       },
       {
         headers: {
-          'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${DASHSCOPE_API_KEY}`,
+          "Content-Type": "application/json",
         },
-        timeout: 60000
       }
-    )
-    .then(response => {
-      const imageUrl = response.data.output.results[0].url;
-      console.log(`[API] 成功生成图像: ${imageUrl}`);
-      res.write(`data: ${JSON.stringify({ image_url: imageUrl })}\n\n`);
-      res.end();
-    })
-    .catch(error => {
-      const errorMsg = error.response?.data || error.message;
-      console.error('[API] 调用失败:', errorMsg);
-      res.write(`data: ${JSON.stringify({ error: '图像生成失败', details: errorMsg })}\n\n`);
-      res.end();
-    })
-    .finally(() => clearInterval(heartbeat));
+    );
 
-  } else {
-    res.writeHead(404).end('Not Found');
+    const imageUrl = response.data.output.results[0].url;
+    console.log(`[API] 图像生成成功: ${imageUrl}`);
+
+    // 输出 SSE 格式事件
+    process.stdout.write(
+      `data: ${JSON.stringify({ image_url: imageUrl })}\n\n`
+    );
+  } catch (error) {
+    const errorMsg = error.response?.data || error.message;
+    console.error("[API] 调用失败:", errorMsg);
+
+    process.stdout.write(
+      `data: ${JSON.stringify({ error: "图像生成失败", details: errorMsg })}\n\n`
+    );
   }
-});
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ 文生图 MCP 服务已启动: http://localhost:${PORT}/sse`);
-  console.log(`📌 使用方式: /sse?prompt=你的描述`);
 });
