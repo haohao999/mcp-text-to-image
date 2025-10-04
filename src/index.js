@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { StdioServer } from "@modelcontextprotocol/sdk";
+import { StdioServer } from "@modelcontextprotocol/sdk/server";
 import axios from "axios";
 
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
