@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 import axios from "axios";
 
-// 从环境变量读取 API Key
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
 if (!DASHSCOPE_API_KEY) {
   console.error("❌ 错误: 没有检测到 DASHSCOPE_API_KEY，请在 mcp-gateway 配置里设置 env");
   process.exit(1);
 }
 
-// 处理输入（mcp-gateway 会把请求通过 stdin 发过来）
 process.stdin.setEncoding("utf-8");
 
-console.log("✅ MCP TextToImage 服务已启动 (stdio-sse 模式)");
-console.log("📌 等待 mcp-gateway 输入 prompt...");
+// 🚀 一启动就告诉 mcp-gateway：我准备好了
+process.stdout.write(`data: ${JSON.stringify({ status: "ready" })}\n\n`);
+
+console.error("✅ MCP TextToImage 服务已启动 (stdio-sse 模式)");
+console.error("📌 等待 mcp-gateway 输入 prompt...");
 
 process.stdin.on("data", async (chunk) => {
   let input;
@@ -24,9 +25,9 @@ process.stdin.on("data", async (chunk) => {
   }
 
   const prompt = input.prompt || "一只猫";
-  console.log(`[SSE] 收到中文 Prompt: ${prompt}`);
+  console.error(`[SSE] 收到中文 Prompt: ${prompt}`);
 
-  // 先返回“开始生成”的事件
+  // 通知开始生成
   process.stdout.write(
     `data: ${JSON.stringify({ status: "generating", prompt })}\n\n`
   );
@@ -48,7 +49,7 @@ process.stdin.on("data", async (chunk) => {
     );
 
     const imageUrl = response.data.output.results[0].url;
-    console.log(`[API] 图像生成成功: ${imageUrl}`);
+    console.error(`[API] 图像生成成功: ${imageUrl}`);
 
     // 输出 SSE 格式事件
     process.stdout.write(
