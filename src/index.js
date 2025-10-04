@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
-import { StdioServer } from "@modelcontextprotocol/sdk/server";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+// 导入 MCP SDK 中的 Server 类，用于创建 MCP 服务器
+
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+// 导入 StdioServerTransport，用于通过标准输入输出与 MCP 客户端通信
 import axios from "axios";
 
 const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
